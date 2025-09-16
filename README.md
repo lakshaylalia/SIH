@@ -1,25 +1,26 @@
+
 ## API Documentation
 
 ### Base URL
-
 `/api/v1/`
 
 ---
 
-### 1. Register User
+### Authentication Routes
+
+#### Register User
 **POST** `/api/v1/auth/register`
 
 **Request Body:**
 ```json
 {
-	"firstName": "John",
-	"lastName": "Doe",
+	"name": "John Doe",
 	"email": "john@example.com",
 	"password": "yourpassword",
 	"documentId": "ABC123",
-	"phoneNumber": "9876543210",
-	"age": 25,
-	"gender": "male"
+	"number": "+919876543210",
+	"avatarImage": "/images/defaultUserImage.webp",
+	"role": "volunteer"
 }
 ```
 **Response:**
@@ -38,75 +39,7 @@
 
 ---
 
-### 2. Generate OTP
-**POST** `/api/v1/auth/generate-otp`
-
-**Request Body:**
-```json
-{
-	"phoneNumber": "9876543210"
-}
-```
-**Response:**
-```json
-{
-	"success": true,
-	"statusCode": 201,
-	"data": null,
-	"message": "OTP sent successfully"
-}
-```
-
----
-
-### 3. Resend OTP
-**POST** `/api/v1/auth/resend-otp`
-
-**Request Body:**
-```json
-{
-	"phoneNumber": "9876543210"
-}
-```
-**Response:**
-```json
-{
-	"success": true,
-	"statusCode": 200,
-	"data": null,
-	"message": "OTP resent successfully"
-}
-```
-
----
-
-### 4. Login with OTP
-**POST** `/api/v1/auth/login-otp`
-
-**Request Body:**
-```json
-{
-	"number": "9876543210",
-	"otp": "123456"
-}
-```
-**Response:**
-```json
-{
-	"success": true,
-	"statusCode": 201,
-	"data": {
-		"user": { /* user object */ },
-		"token": "<JWT Token>"
-	},
-	"message": "User logged in successfully"
-}
-```
-**Set-Cookie:** `token=<JWT Token>`
-
----
-
-### 5. Login with Email
+#### Login with Email
 **POST** `/api/v1/auth/login-email`
 
 **Request Body:**
@@ -132,7 +65,120 @@
 
 ---
 
-### 6. Logout User
+#### Send OTP to Email
+**POST** `/api/v1/auth/generate-otp-mail`
+
+**Request Body:**
+```json
+{
+	"email": "john@example.com",
+	"name": "John Doe"
+}
+```
+**Response:**
+```json
+{
+	"success": true,
+	"statusCode": 201,
+	"data": null,
+	"message": "OTP sent to email successfully"
+}
+```
+
+---
+
+#### Verify Email OTP
+**POST** `/api/v1/auth/verify-email`
+
+**Request Body:**
+```json
+{
+	"email": "john@example.com",
+	"otp": "123456"
+}
+```
+**Response:**
+```json
+{
+	"success": true,
+	"statusCode": 200,
+	"data": null,
+	"message": "Email verified successfully"
+}
+```
+
+---
+
+#### Send OTP to Phone
+**POST** `/api/v1/auth/generate-otp-number`
+
+**Request Body:**
+```json
+{
+	"number": "+919876543210"
+}
+```
+**Response:**
+```json
+{
+	"success": true,
+	"statusCode": 201,
+	"data": null,
+	"message": "OTP sent to phone successfully"
+}
+```
+
+---
+
+#### Verify Phone OTP
+**POST** `/api/v1/auth/verify-number`
+
+**Request Body:**
+```json
+{
+	"number": "+919876543210",
+	"otp": "123456"
+}
+```
+**Response:**
+```json
+{
+	"success": true,
+	"statusCode": 200,
+	"data": null,
+	"message": "Phone number verified successfully"
+}
+```
+
+---
+
+#### Login with OTP
+**POST** `/api/v1/auth/login-otp`
+
+**Request Body:**
+```json
+{
+	"number": "+919876543210",
+	"otp": "123456"
+}
+```
+**Response:**
+```json
+{
+	"success": true,
+	"statusCode": 201,
+	"data": {
+		"user": { /* user object */ },
+		"token": "<JWT Token>"
+	},
+	"message": "User logged in successfully"
+}
+```
+**Set-Cookie:** `token=<JWT Token>`
+
+---
+
+#### Logout User
 **POST** `/api/v1/auth/logout`
 
 **Headers:**
@@ -145,6 +191,33 @@
 	"statusCode": 200,
 	"data": null,
 	"message": "User logged out successfully"
+}
+```
+
+---
+
+### User Schema
+```json
+{
+	"name": "John Doe",
+	"email": "john@example.com",
+	"password": "hashed",
+	"uniqueId": "string",
+	"documentId": "string",
+	"number": "+919876543210",
+	"avatarImage": "/images/defaultUserImage.webp",
+	"role": "volunteer|clinic|ashaWorker|admin",
+	"createdAt": "date",
+	"updatedAt": "date"
+}
+```
+
+### OTP Schema
+```json
+{
+	"userIndentifier": "email or number",
+	"otp": "hashed",
+	"createdAt": "date"
 }
 ```
 
