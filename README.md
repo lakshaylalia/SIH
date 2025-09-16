@@ -201,12 +201,12 @@
 ```json
 {
 	"_id": "68c9ab9bed4634db3d2ed601",
-	"name": "aryan",
-	"email": "aryan@gmail.com",
+	"name": "test",
+	"email": "test@gmail.com",
 	"password": "$2b$10$7Jdvz1MvOHIM/XCuWYOrkOAMeAxaOy8R2Evo2iyJgKdI.cTBQUa6W",
 	"uniqueId": "ZRKEU62T9RFO",
 	"documentId": "123456",
-	"number": "+919317288433",
+	"number": "+919876543210",
 	"avatarImage": "/images/defaultUserImage.webp",
 	"role": "ashaWorker",
 	"createdAt": "2025-09-16T18:25:31.639Z",
