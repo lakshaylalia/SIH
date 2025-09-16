@@ -2,6 +2,7 @@ import otpGenerator from "otp-generator";
 import { OTP } from "../models/otp.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { client } from "../utils/twilio.js";
+import sgMail from "@sendgrid/mail";
 
 const generateOTP = async () => {
   try {
@@ -18,17 +19,25 @@ const generateOTP = async () => {
   }
 };
 
-const sendOtp = async (number, otp) => {
-  if (!number || !otp) {
-    throw new ApiError(400, "Number and OTP are required");
+const sendOtpPhone = async (number) => {
+  if (!number) {
+    throw new ApiError(500, "Number is required");
   }
 
   if (!number.startsWith("+")) {
     number = `+91${number}`;
   }
 
-  await OTP.deleteMany({ phoneNumber: number });
-  const otpObj = await OTP.create({ phoneNumber: number, otp });
+  await OTP.deleteMany({ userIndentifier: number });
+
+  let otp = generateOTP();
+  if (!otp) {
+    throw new ApiError(500, "Error in generating OTP");
+  }
+
+  otp = (await otp).toString();
+  const otpObj = await OTP.create({ userIndentifier: number, otp });
+  console.log(otpObj);
   if (!otpObj) {
     throw new ApiError(500, "Failed to send OTP");
   }
@@ -42,7 +51,6 @@ const sendOtp = async (number, otp) => {
       to: number,
     });
 
-    console.log("OTP sent:", res.sid);
     return res;
   } catch (error) {
     console.log(error);
@@ -50,45 +58,101 @@ const sendOtp = async (number, otp) => {
   }
 };
 
-const verifyOTP = async (number, otp) => {
+const verifyOtpPhone = async (number, otp) => {
   try {
     if (!number || !otp) {
       throw new ApiError(400, "Number and OTP are required");
     }
+    console.log(number, otp);
 
     if (!number.startsWith("+")) {
       number = `+91${number}`;
     }
 
-    const otpData = await OTP.findOne({ phoneNumber: number });
-    console.log("OTP data:", otpData);
+    const otpData = await OTP.findOne({ userIndentifier: number });
+    console.log(otpData);
     if (!otpData) {
       return false;
     }
-    const isValid = await otpData.verify(otp);
-    console.log("OTP verified:", isValid);
 
-    if (isValid) {
-      await OTP.deleteOne({ phoneNumber: number });
-      return true;
+    const isValid = await otpData.verify(otp);
+    if (!isValid) {
+      return false;
     }
-    return false;
+
+    await OTP.deleteMany({ userIdentifier: number });
+    return true;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     throw new ApiError(500, "Error in verifying OTP");
   }
 };
 
-const resendOTP = async (number) => {
+const sendOtpEmail = async (email, name) => {
   try {
-    await OTP.deleteMany({ phoneNumber: number });
-    const newOtp = await generateOTP();
-    const res = await sendOtp(number, newOtp);
-    return res;
+    let otp = await generateOTP();
+    otp = otp.toString();
+    await OTP.deleteMany({ userIndentifier: email });
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    const otpObj = await OTP.create({ userIndentifier: email, otp });
+    if (!otpObj) {
+      throw new ApiError(500, "Failed to send OTP");
+    }
+    console.log(otpObj);
+
+    const msg = {
+      to: email,
+      from: process.env.FROM_EMAIL,
+      subject: "Your OTP Code",
+      text: `Hi ${name}, your OTP is ${otp}. It will expire in 10 minutes. Do not share this code with anyone. If you didn’t request this, please ignore this email.`,
+      html: `
+        <p>Hi ${name},</p>
+        <p>Your OTP is: <b>${otp}</b></p>
+        <p>This code will expire in 10 minutes.</p>
+        <p>Do not share this code with anyone.</p>
+        <p>If you didn’t request this, please ignore this email.</p>
+      `,
+    };
+
+    await sgMail.send(msg);
+    console.log("OTP Email sent:", otp);
+    return otp;
   } catch (error) {
-    console.log(error);
-    throw new ApiError(500, "Error in resending OTP");
+    console.error("Error sending OTP email:", error);
+    throw error;
   }
 };
 
-export { generateOTP, sendOtp, verifyOTP, resendOTP };
+const verifyOTPEmail = async (email, otp) => {
+  try {
+    if (!email || !otp) {
+      throw new ApiError(400, "Email and OTP are required");
+    }
+
+    const otpData = await OTP.findOne({ userIndentifier: email });
+    console.log(otpData);
+    if (!otpData) {
+      return false;
+    }
+
+    const isValid = await otpData.verify(otp);
+    if (!isValid) {
+      return false;
+    }
+
+    await OTP.deleteMany({ userIndentifier: email });
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    throw new ApiError(500, "Error while validating email OTP");
+  }
+};
+
+export {
+  generateOTP,
+  sendOtpPhone,
+  verifyOtpPhone,
+  sendOtpEmail,
+  verifyOTPEmail,
+};

@@ -2,12 +2,11 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
-import { OTP } from "../models/otp.model.js";
 import {
-  generateOTP,
-  sendOtp,
-  verifyOTP,
-  resendOTP,
+  sendOtpPhone,
+  verifyOtpPhone,
+  sendOtpEmail,
+  verifyOTPEmail,
 } from "../services/otp.service.js";
 import { generateToken } from "../services/user.service.js";
 import { nanoid } from "nanoid";
@@ -19,51 +18,33 @@ const options = {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  let {
-    firstName,
-    lastName,
-    email,
-    password,
-    documentId,
-    phoneNumber,
-    age,
-    gender,
-  } = req.body;
-  if (
-    !firstName ||
-    !email ||
-    !password ||
-    !documentId ||
-    !phoneNumber ||
-    !age ||
-    !gender
-  ) {
+  let { name, email, password, documentId, number, role } = req.body;
+  if (!name || !email || !password || !documentId || !number || !role) {
     throw new ApiError(400, "Missing required fields");
   }
-  if (phoneNumber.length !== 10) {
+  if (number.length !== 10) {
     throw new ApiError(400, "Invalid phone number");
   }
   const existedUser = await User.findOne({
-    $or: [{ email }, { documentId }, { phoneNumber }],
+    $or: [{ email }, { documentId }, { number }],
   });
 
   if (existedUser) {
     throw new ApiError(400, "User already exists");
   }
+  if (!number.startsWith("+")) {
+    number = `+91${number}`;
+  }
 
   const uniqueId = nanoid(12).toUpperCase();
-  gender = gender.toLowerCase();
   const user = await User.create({
-    fullName: `${firstName} ${lastName}`,
-    firstName,
-    lastName,
+    name,
     email,
     password,
-    phoneNumber,
+    number,
     documentId,
-    age,
-    gender,
     uniqueId,
+    role,
   });
 
   const token = await generateToken(user);
@@ -109,15 +90,13 @@ const loginUserEmail = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, { user, token }, "User logged in successfully"));
 });
 
-const sendOTP = asyncHandler(async (req, res) => {
-  const { phoneNumber } = req.body;
-  if (!phoneNumber || phoneNumber.length !== 10) {
-    throw new ApiError(400, "Invalid phone number");
+const sendOTPEmail = asyncHandler(async (req, res) => {
+  const { email, name } = req.body;
+  if (!email || !name) {
+    throw new ApiError(400, "Email and Name required");
   }
 
-  const otp = await generateOTP();
-  console.log("OTP :", otp);
-  const otpData = await sendOtp(phoneNumber, otp);
+  const otpData = await sendOtpEmail(email, name);
   if (!otpData) {
     throw new ApiError(500, error.message);
   }
@@ -127,40 +106,82 @@ const sendOTP = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, null, "OTP sent successfully"));
 });
 
-const resendOtp = asyncHandler(async (req, res) => {
-  const { phoneNumber } = req.body;
-  if (!phoneNumber || phoneNumber.length !== 10) {
-    throw new ApiError(400, "Invalid phone number");
+const verifyEmail = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  console.log(email, otp);
+  if (!email || !otp) {
+    throw new ApiError(400, "Email and OTP required");
   }
 
-  const otp = await generateOTP();
-  const otpData = await resendOTP(phoneNumber, otp);
-  if (!otpData) {
-    throw new ApiError(500, "Failed to resend OTP");
+  if (otp.length !== 6) {
+    throw new ApiError(400, "Invalid OTP");
+  }
+
+  const isOtpMatch = await verifyOTPEmail(email, otp);
+  if (!isOtpMatch) {
+    throw new ApiError(403, "Invalid email or OTP");
   }
 
   return res
-    .status(200)
-    .json(new ApiResponse(200, null, "OTP resent successfully"));
+    .status(201)
+    .json(new ApiResponse(201, null, "Email verified successfully"));
+});
+
+const sendOTPPhone = asyncHandler(async (req, res) => {
+  const { number } = req.body;
+  if (!number || number.length !== 10) {
+    throw new ApiError(400, "Invalid phone number");
+  }
+
+  const otpData = await sendOtpPhone(number);
+  if (!otpData) {
+    throw new ApiError(500, error.message);
+  }
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, null, "OTP sent successfully"));
+});
+
+const verifyNumber = asyncHandler(async (req, res) => {
+  const { number, otp } = req.body;
+  if (!number || !otp) {
+    throw new ApiError(400, "Email and otp required");
+  }
+
+  if (number.length !== 10 || otp.length !== 6) {
+    throw new ApiError(403, "Invalid phone number of OTP");
+  }
+
+  const isOtpMatch = await verifyOtpPhone(number, otp);
+  if (!isOtpMatch) {
+    throw new ApiError(403, "Invalid phone number or OTP");
+  }
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, null, "Phone number verified successfully"));
 });
 
 const loginUserOtp = asyncHandler(async (req, res) => {
   let { number, otp } = req.body;
   if (!number || !otp) {
-    throw new ApiError(400, "Missing required fields");
+    throw new ApiError(400, "Email and OTP required.");
   }
   if (number.length !== 10 || otp.length !== 6) {
     throw new ApiError(400, "Invalid phone number or OTP");
   }
-  
 
-  const isOtpMatch = await verifyOTP(number, otp);
-  console.log(isOtpMatch);
+  const isOtpMatch = await verifyOtpPhone(number, otp);
   if (!isOtpMatch) {
     throw new ApiError(403, "Invalid phone number or OTP");
   }
 
-  const user = await User.findOne({ phoneNumber : number });
+  if (!number.startsWith("+")) {
+    number = `+91${number}`;
+  }
+
+  const user = await User.findOne({ number });
   if (!user) {
     throw new ApiError(500, "User not found in otp verification");
   }
@@ -198,7 +219,9 @@ export {
   registerUser,
   loginUserEmail,
   loginUserOtp,
-  resendOtp,
-  sendOTP,
+  sendOTPPhone,
   logoutUser,
+  verifyNumber,
+  verifyEmail,
+  sendOTPEmail,
 };

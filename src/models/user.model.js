@@ -4,21 +4,10 @@ import jwt from "jsonwebtoken";
 
 const userSchema = new Schema(
   {
-    fullName: {
+    name: {
       type: String,
       lowercase: true,
       trim: true,
-    },
-    firstName: {
-      type: String,
-      required: true,
-      trim: true,
-      lowercase: true,
-    },
-    lastName: {
-      type: String,
-      trim: true,
-      lowercase: true,
     },
     email: {
       type: String,
@@ -30,6 +19,8 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: true,
+      minLength: 6,
+      maxLength: 12,
     },
     uniqueId: {
       type: String,
@@ -37,20 +28,16 @@ const userSchema = new Schema(
       unique: true,
     },
     documentId: {
-      type: Number,
-      required: true,
-      unique: true,
-    },
-    phoneNumber: {
       type: String,
       required: true,
       unique: true,
-      minLength: 10,
-      maxLength: 10,
     },
-    age: {
-      type: Number,
+    number: {
+      type: String,
       required: true,
+      unique: true,
+      minLength: 13,
+      maxLength: 13,
     },
     avatarImage: {
       type: String,
@@ -58,9 +45,9 @@ const userSchema = new Schema(
       trim: true,
       default: "/images/defaultUserImage.webp",
     },
-    gender: {
+    role: {
       type: String,
-      enum: ["male", "female", "Prefer not to say"],
+      enum: ["volunteer", "clinic", "ashaWorker", "admin"],
       required: true,
     },
   },

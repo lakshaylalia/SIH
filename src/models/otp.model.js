@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 
 const otpSchema = new Schema({
-  phoneNumber: {
+  userIndentifier: { // can be eamil or number
     type: String,
     required: true,
   },
