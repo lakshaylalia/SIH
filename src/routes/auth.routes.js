@@ -18,7 +18,7 @@ router.route("/verify-email").post(verifyEmail);
 
 router.route("/login-email").post(loginUserEmail);
 
-router.route("/generate-otp-mail").post(sendOTPEmail);
+router.route("/generate-otp-email").post(sendOTPEmail);
 
 router.route("/verify-number").post(verifyNumber);
 

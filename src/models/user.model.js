@@ -8,36 +8,74 @@ const userSchema = new Schema(
       type: String,
       lowercase: true,
       trim: true,
+      required: [true, "Name is required"],
+      minLength: [2, "Name must be at least 2 characters"],
+      maxLength: [100, "Name cannot exceed 100 characters"],
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
       trim: true,
+      validate: {
+        validator: function (v) {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        },
+        message: "Please enter a valid email address",
+      },
     },
     password: {
       type: String,
-      required: true,
-      minLength: 6,
-      maxLength: 12,
+      required: [true, "Password is required"],
+      minLength: [6, "Password must be at least 6 characters"],
+      validate: {
+        validator: function (v) {
+          // Only validate on new passwords or when password is being changed
+          if (!this.isModified("password")) return true;
+          // Check for at least one uppercase, one lowercase, one number
+          return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(v);
+        },
+        message:
+          "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      },
     },
     uniqueId: {
       type: String,
-      required: true,
+      required: [true, "Unique ID is required"],
       unique: true,
+      trim: true,
+      uppercase: true,
+      index: true,
     },
     documentId: {
       type: String,
-      required: true,
+      required: [true, "Document ID is required"],
       unique: true,
+      trim: true,
+      uppercase: true,
+      index: true,
     },
     number: {
       type: String,
-      required: true,
+      required: [true, "Phone number is required"],
       unique: true,
-      minLength: 13,
-      maxLength: 13,
+      minLength: [
+        13,
+        "Phone number must be exactly 13 characters (+91xxxxxxxxxx)",
+      ],
+      maxLength: [
+        13,
+        "Phone number must be exactly 13 characters (+91xxxxxxxxxx)",
+      ],
+      validate: {
+        validator: function (v) {
+          return /^\+91[6-9]\d{9}$/.test(v);
+        },
+        message:
+          "Phone number must be a valid Indian mobile number (+91xxxxxxxxxx)",
+      },
+      index: true,
     },
     avatarImage: {
       type: String,
@@ -47,8 +85,12 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["volunteer", "clinic", "ashaWorker", "admin"],
-      required: true,
+      enum: {
+        values: ["volunteer", "clinic", "ashaWorker", "admin"],
+        message: "Role must be volunteer, clinic, ashaWorker, or admin",
+      },
+      required: [true, "Role is required"],
+      lowercase: true,
     },
   },
   { timestamps: true }

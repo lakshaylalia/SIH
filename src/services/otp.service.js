@@ -16,7 +16,6 @@ const generateOTP = async () => {
     });
     return otp;
   } catch (error) {
-    console.log(error);
     throw new ApiError(500, "Error in generating OTP");
   }
 };
@@ -44,7 +43,7 @@ const sendOtpPhone = async (number) => {
 
   otp = (await otp).toString();
   const otpObj = await OTP.create({ userIndentifier: number, otp });
-  console.log(otpObj);
+
   if (!otpObj) {
     throw new ApiError(500, "Failed to send OTP");
   }
@@ -60,7 +59,6 @@ const sendOtpPhone = async (number) => {
 
     return res;
   } catch (error) {
-    console.log(error);
     throw new ApiError(500, "Error in sending OTP");
   }
 };
@@ -70,14 +68,12 @@ const verifyOtpPhone = async (number, otp) => {
     if (!number || !otp) {
       throw new ApiError(400, "Number and OTP are required");
     }
-    console.log(number, otp);
 
     if (!number.startsWith("+")) {
       number = `+91${number}`;
     }
 
     const otpData = await OTP.findOne({ userIndentifier: number });
-    console.log(otpData);
     if (!otpData) {
       return false;
     }
@@ -105,7 +101,6 @@ const sendOtpEmail = async (email, name) => {
     if (!otpObj) {
       throw new ApiError(500, "Failed to send OTP");
     }
-    console.log(otpObj);
 
     const msg = {
       to: email,
@@ -122,7 +117,6 @@ const sendOtpEmail = async (email, name) => {
     };
 
     await sgMail.send(msg);
-    console.log("OTP Email sent:", otp);
     return otp;
   } catch (error) {
     console.error("Error sending OTP email:", error);
@@ -137,7 +131,6 @@ const verifyOTPEmail = async (email, otp) => {
     }
 
     const otpData = await OTP.findOne({ userIndentifier: email });
-    console.log(otpData);
     if (!otpData) {
       return false;
     }

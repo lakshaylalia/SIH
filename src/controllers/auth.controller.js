@@ -9,7 +9,6 @@ import {
   verifyOTPEmail,
 } from "../services/otp.service.js";
 import { generateToken } from "../services/user.service.js";
-import { nanoid } from "nanoid";
 import { customAlphabet } from 'nanoid';
 
 const options = {
@@ -74,12 +73,10 @@ const loginUserEmail = asyncHandler(async (req, res) => {
 
   let user = await User.findOne({ email });
   if (!user) {
-    console.log("user not found");
     throw new ApiError(403, "Invalid email or password");
   }
   const isPasswordMatch = await user.comparePassword(password);
   if (!isPasswordMatch) {
-    console.log("password not match");
     throw new ApiError(403, "Invalid email or password");
   }
 
@@ -99,6 +96,7 @@ const loginUserEmail = asyncHandler(async (req, res) => {
 });
 
 const sendOTPEmail = asyncHandler(async (req, res) => {
+
   const { email, name } = req.body;
   if (!email || !name) {
     throw new ApiError(400, "Email and Name required");
@@ -116,7 +114,6 @@ const sendOTPEmail = asyncHandler(async (req, res) => {
 
 const verifyEmail = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
-  console.log(email, otp);
   if (!email || !otp) {
     throw new ApiError(400, "Email and OTP required");
   }
