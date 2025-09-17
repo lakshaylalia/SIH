@@ -3,6 +3,8 @@ import { OTP } from "../models/otp.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { client } from "../utils/twilio.js";
 import sgMail from "@sendgrid/mail";
+import { User } from "../models/user.model.js";
+import Api from "twilio/lib/rest/Api.js";
 
 const generateOTP = async () => {
   try {
@@ -26,6 +28,11 @@ const sendOtpPhone = async (number) => {
 
   if (!number.startsWith("+")) {
     number = `+91${number}`;
+  }
+
+  const user = await User.findOne({ number });
+  if (!user) {
+    throw new ApiError(400, "User with this number does not exist");
   }
 
   await OTP.deleteMany({ userIndentifier: number });

@@ -10,6 +10,7 @@ import {
 } from "../services/otp.service.js";
 import { generateToken } from "../services/user.service.js";
 import { nanoid } from "nanoid";
+import { customAlphabet } from 'nanoid';
 
 const options = {
   httpOnly: true,
@@ -36,8 +37,10 @@ const registerUser = asyncHandler(async (req, res) => {
     number = `+91${number}`;
   }
 
-  const uniqueId = nanoid(12).toUpperCase();
-  const user = await User.create({
+  const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const generateUniqueId = customAlphabet(alphabet, 12);
+  const uniqueId = generateUniqueId();
+  let user = await User.create({
     name,
     email,
     password,
@@ -53,6 +56,10 @@ const registerUser = asyncHandler(async (req, res) => {
   }
   user.accessToken = token;
   await user.save({ validateBeforeSave: false });
+  user = await User.findOne(
+    { email },
+    "name number avatarImage _id email documentId role uniqueId"
+  );
   return res
     .status(201)
     .cookie("token", token, options)
@@ -65,15 +72,12 @@ const loginUserEmail = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Missing required fields");
   }
 
-  const user = await User.findOne({ email });
+  let user = await User.findOne({ email });
   if (!user) {
     console.log("user not found");
     throw new ApiError(403, "Invalid email or password");
   }
-  console.log(user);
-
   const isPasswordMatch = await user.comparePassword(password);
-  console.log(isPasswordMatch);
   if (!isPasswordMatch) {
     console.log("password not match");
     throw new ApiError(403, "Invalid email or password");
@@ -84,6 +88,10 @@ const loginUserEmail = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Failed to generate token");
   }
 
+  user = await User.findOne(
+    { email },
+    "name number avatarImage _id email documentId role uniqueId"
+  );
   return res
     .status(200)
     .cookie("token", token, options)
@@ -181,7 +189,10 @@ const loginUserOtp = asyncHandler(async (req, res) => {
     number = `+91${number}`;
   }
 
-  const user = await User.findOne({ number });
+  const user = await User.findOne(
+    { number },
+    "name number avatarImage _id email documentId role uniqueId"
+  );
   if (!user) {
     throw new ApiError(500, "User not found in otp verification");
   }
