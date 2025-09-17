@@ -30,6 +30,7 @@
 
 ```json
 {
+<<<<<<< HEAD
   "success": true,
   "statusCode": 201,
   "data": {
@@ -46,6 +47,28 @@
     "token": "<JWT Token>"
   },
   "message": "User created successfully"
+=======
+	"success": true,
+	"statusCode": 201,
+	"data": {
+		"user": {
+	              "_id": "68c9ab9bed4634db3d2ed601",
+                  "name": "test",
+	              "email": "test@gmail.com",
+	              "password": "$2b$10$7Jdvz1MvOHIM/XCuWYOrkOAMeAxaOy8R2Evo2iyJgKdI.cTBQUa6W",
+	              "uniqueId": "ZRKEU62T9RFO",
+	              "documentId": "123456",
+                  "number": "+919876543210",
+	              "avatarImage": "/images/defaultUserImage.webp",
+	              "role": "ashaWorker",
+	              "createdAt": "2025-09-16T18:25:31.639Z",
+	              "updatedAt": "2025-09-16T18:25:31.639Z",
+	              "__v": 0
+                },
+		"token": "<JWT Token>"
+	},
+	"message": "User created successfully"
+>>>>>>> 1499fe4865bb397b93f508009d8704dc08b7f369
 }
 ```
 
@@ -260,6 +283,7 @@
 
 ```json
 {
+<<<<<<< HEAD
   "_id": "68c9ab9bed4634db3d2ed601",
   "name": "test",
   "email": "testn@gmail.com",
@@ -268,6 +292,20 @@
   "number": "+919876543210",
   "avatarImage": "/images/defaultUserImage.webp",
   "role": "test role"
+=======
+	"_id": "68c9ab9bed4634db3d2ed601",
+	"name": "test",
+	"email": "test@gmail.com",
+	"password": "$2b$10$7Jdvz1MvOHIM/XCuWYOrkOAMeAxaOy8R2Evo2iyJgKdI.cTBQUa6W",
+	"uniqueId": "ZRKEU62T9RFO",
+	"documentId": "123456",
+	"number": "+919876543210",
+	"avatarImage": "/images/defaultUserImage.webp",
+	"role": "ashaWorker",
+	"createdAt": "2025-09-16T18:25:31.639Z",
+	"updatedAt": "2025-09-16T18:25:31.639Z",
+	"__v": 0
+>>>>>>> 1499fe4865bb397b93f508009d8704dc08b7f369
 }
 ```
 
