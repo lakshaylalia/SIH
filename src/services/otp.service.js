@@ -4,7 +4,6 @@ import { ApiError } from "../utils/apiError.js";
 import { client } from "../utils/twilio.js";
 import sgMail from "@sendgrid/mail";
 import { User } from "../models/user.model.js";
-import Api from "twilio/lib/rest/Api.js";
 
 const generateOTP = async () => {
   try {

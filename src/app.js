@@ -17,9 +17,11 @@ app.use(express.static(path.join(__dirname, "../public")));
 // routes import
 import authRouter from "./routes/auth.routes.js";
 import reportRouter from "./routes/report.route.js";
+import waterSampleRouter from "./routes/sample.routes.js";
 
 // routes decelaration
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/report", reportRouter);
+app.use("/api/v1/water-sample", waterSampleRouter);
 
 export { app };

@@ -115,7 +115,7 @@ const reportSchema = new Schema(
 
 reportSchema.methods.getFullAddress = function () {
   const { street, city, state, zipCode, country } = this.address;
-  return `${street}, ${city}, ${state} ${zipCode}, ${country}`;
+  return `${tehsil}, ${district}, ${state} , (${pinCode})`;
 };
 
 export const Report = mongoose.model("Report", reportSchema);
