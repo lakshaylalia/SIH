@@ -83,11 +83,12 @@ const createReport = asyncHandler(async (req, res) => {
     reportData.medicalReport = image.url;
   }
 
-  const report = await Report.create(reportData);
+  let report = await Report.create(reportData);
 
   if (!report) {
     throw new ApiError(500, "Report creation failed. Please try again.");
   }
+  report = await Report.findById(report._id).select("-createdAt -updatedAt -__v");
 
   return res
     .status(201)

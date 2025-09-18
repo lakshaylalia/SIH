@@ -288,6 +288,200 @@
 | updatedAt   | String | ISO timestamp of last update                                     |
 | \_\_v       | Number | Mongoose schema version key                                      |
 
+
+---
+
+### Report Endpoints
+
+#### Create Medical Report
+**POST** `/api/v1/report/`
+
+**Headers:**
+- `Authorization: Bearer <JWT Token>`
+- `Content-Type: multipart/form-data`
+
+**Body (multipart/form-data):**
+- `medicalReport` (file, required if disease is present)
+- `name` (string, required)
+- `age` (number, required)
+- `gender` (string, required: male|female|other)
+- `contact` (string, required, e.g. +919876543210)
+- `tehsil`, `district`, `state`, `pinCode`, `latitude`, `longitude` (all required)
+- `landmark` (string, optional)
+- `documentId` (string, required)
+- `disease` (string, optional)
+- `symptoms` (array of string, required)
+
+**Response:**
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "data": {
+    "_id": "...",
+    "name": "...",
+    "age": 30,
+    "gender": "male",
+    "contact": "+919876543210",
+    "address": {
+      "tehsil": "...",
+      "district": "...",
+      "state": "...",
+      "pinCode": "...",
+      "landmark": "...",
+      "latitude": 28.6,
+      "longitude": 77.2
+    },
+    "documentId": "...",
+    "disease": "...",
+    "medicalReport": "https://...cloudinary.com/...",
+    "symptoms": ["fever", "cough"],
+    "reportedBy": "<userId>",
+  },
+  "message": "Report created successfully."
+}
+```
+
+#### Report Object Fields
+| Field | Type | Description |
+|-------|------|-------------|
+| _id | String | Unique report ID |
+| name | String | Patient name |
+| age | Number | Patient age |
+| gender | String | male, female, or other |
+| contact | String | Patient phone number (+91...) |
+| address | Object | Address details (see below) |
+| documentId | String | Patient's document/identity number |
+| disease | String | Diagnosed disease (optional) |
+| medicalReport | String | URL to uploaded medical report (if any) |
+| symptoms | Array | List of symptoms |
+| reportedBy | String | User ID of reporter |
+| createdAt | String | ISO timestamp |
+| updatedAt | String | ISO timestamp |
+
+**Address Object:**
+| Field | Type | Description |
+|-------|------|-------------|
+| tehsil | String | Tehsil |
+| district | String | District |
+| state | String | State |
+| pinCode | String | PIN code |
+| landmark | String | Landmark (optional) |
+| latitude | Number | Latitude |
+| longitude | Number | Longitude |
+
+---
+
+### Water Sample Endpoints
+
+#### Create Water Sample
+**POST** `/api/v1/sample/`
+
+**Headers:**
+- `Content-Type: application/json`
+
+**Request Body:**
+```json
+{
+  "phLevel": 7.2,
+  "turbidityNTU": 2.5,
+  "chlorineConcentrationPPM": 0.5,
+  "bacterialCountCFU": 100,
+  "latitude": 28.6,
+  "longitude": 77.2
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "data": {
+    "_id": "...",
+    "phLevel": 7.2,
+    "turbidityNTU": 2.5,
+    "chlorineConcentrationPPM": 0.5,
+    "bacterialCountCFU": 100,
+    "rainfallMM": 0,
+    "temperatureCelsius": 30,
+    "relativeHumidityPercent": 60,
+    "collectedBy": "<userId>",
+    "collectionLocation": {
+      "latitude": 28.6,
+      "longitude": 77.2,
+      "locationName": null
+    },
+    "sampleStatus": "pending",
+    "createdAt": "...",
+    "updatedAt": "..."
+  },
+  "message": "Water quality sample created successfully"
+}
+```
+
+#### Get All Water Samples
+**GET** `/api/v1/sample/`
+
+**Headers:**
+- `Authorization: Bearer <JWT Token>`
+
+**Response:**
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "data": [
+    {
+      "_id": "...",
+      "phLevel": 7.2,
+      "turbidityNTU": 2.5,
+      "chlorineConcentrationPPM": 0.5,
+      "bacterialCountCFU": 100,
+      "rainfallMM": 0,
+      "temperatureCelsius": 30,
+      "relativeHumidityPercent": 60,
+      "collectedBy": "<userId>",
+      "collectionLocation": {
+        "latitude": 28.6,
+        "longitude": 77.2,
+        "locationName": null
+      },
+      "sampleStatus": "pending",
+      "createdAt": "...",
+      "updatedAt": "..."
+    }
+  ],
+  "message": "Water samples found"
+}
+```
+
+#### Water Sample Object Fields
+| Field | Type | Description |
+|-------|------|-------------|
+| _id | String | Unique sample ID |
+| phLevel | Number | pH level (0-14) |
+| turbidityNTU | Number | Turbidity in NTU |
+| chlorineConcentrationPPM | Number | Chlorine concentration in PPM |
+| bacterialCountCFU | Number | Bacterial count in CFU |
+| rainfallMM | Number | Rainfall in mm |
+| temperatureCelsius | Number | Temperature in Celsius |
+| relativeHumidityPercent | Number | Relative humidity (%) |
+| collectedBy | String | User ID of collector |
+| collectionLocation | Object | Location details |
+| sampleStatus | String | pending, analyzed, approved, rejected |
+| createdAt | String | ISO timestamp |
+| updatedAt | String | ISO timestamp |
+
+**Collection Location Object:**
+| Field | Type | Description |
+|-------|------|-------------|
+| latitude | Number | Latitude |
+| longitude | Number | Longitude |
+| locationName | String | Name/description (optional) |
+
+---
+
 ### OTP Schema
 
 ```json

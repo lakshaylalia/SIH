@@ -48,7 +48,7 @@ const createWaterSample = asyncHandler(async (req, res) => {
 
   const userId = req.user?._id;
 
-  const sample = await WaterQualitySample.create({
+  let sample = await WaterQualitySample.create({
     phLevel,
     turbidityNTU,
     chlorineConcentrationPPM,
@@ -60,9 +60,9 @@ const createWaterSample = asyncHandler(async (req, res) => {
     collectionLocation: {
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude),
-      locationName: locationName?.trim() || null,
     },
   });
+  sample = await WaterQualitySample.findById(sample._id).select("-__v");
 
   return res
     .status(201)
